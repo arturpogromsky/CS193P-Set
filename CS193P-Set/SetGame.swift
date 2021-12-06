@@ -15,6 +15,8 @@ struct SetGame {
   
   var scoreTracker = ScoreTracker()
   
+  
+  //MARK: - Gameplay functions
   /// Choose card, check whether chosen cards form a set or not and highlight them with apropriate color. If cards already highlighted - replace matched or disselect mismatched cards.
   mutating func chooseCard(at index: Int) {
     deck[index].selectionStatus.toggle()
@@ -70,8 +72,24 @@ struct SetGame {
     }
   }
   
-  // MARK: - Private
+  /// Add 12 cards from deck on table
+  mutating func deal() {
+    replaceMatchedCards()
+    if deck.numberOfCardsToDisplay < deck.allCards.count {
+      deck[deck.numberOfCardsToDisplay].isFaceUp = true
+      deck.numberOfCardsToDisplay += 1
+    }
+  }
   
+  mutating func flip() {
+    (0..<deck.numberOfCardsToDisplay).forEach { deck.allCards[$0].isFaceUp.toggle() }
+  }
+  
+  
+  
+  
+  
+  // MARK: - Private
   /// Takes 3 cards as input and checks if they form a set.
   private func isSet(_ cardIndices: [Int]) -> Bool {
     let shapesCount = Set<Card.Shape>(cardIndices.map { deck[$0].shape }).count
@@ -88,7 +106,6 @@ struct SetGame {
     let matchedCardsIndices = deck.allCards.indices.filter { deck.allCards[$0].selectionStatus == .match }
     if matchedCardsIndices.count == 3 {
       removeCards(at: matchedCardsIndices)
-      return
     }
   }
   
@@ -98,11 +115,19 @@ struct SetGame {
     }
   }
   
+  /// Delete cards from deck and add to discard pile
   private mutating func removeCards(at indices: [Int]) {
+    
+    // Search id for each of cards
     let ids = indices.map { deck[$0].id }
+    
+    // Then remove cards with such id from deck.allCards and add to deck.discardPile
     for id in ids {
-      deck.allCards.remove(at: deck.allCards.firstIndex(where: { $0.id == id })!)
+      let indexForId = deck.allCards.firstIndex(where: { $0.id == id })!
+      deck[indexForId].selectionStatus = .none
+      deck.discardPile.append(deck.allCards.remove(at: indexForId))
     }
+    
     if deck.numberOfCardsToDisplay > 12 {
       deck.numberOfCardsToDisplay -= 3
     }
@@ -127,6 +152,7 @@ struct SetGame {
     }
     return nil
   }
+
 }
 
 struct Deck {
@@ -139,11 +165,22 @@ struct Deck {
   }
   
   /// Number of cards to show on screen.
-  var numberOfCardsToDisplay = 12
+  var numberOfCardsToDisplay = 0 {
+    didSet {
+      (0..<numberOfCardsToDisplay).forEach { allCards[$0].isFaceUp = true }
+    }
+  }
   
   var cardsToDisplay: [Card] {
     Array(allCards[..<numberOfCardsToDisplay])
   }
+  
+  var cardsInDeck: [Card] {
+    Array(allCards[numberOfCardsToDisplay...])
+  }
+  
+  /// Array which contains matched(and deleted from deck) cards
+  var discardPile: [Card] = []
   
   var selectedCardsIndices: [Int] {
     allCards.indices.filter { allCards[$0].selectionStatus != .none }
@@ -170,7 +207,7 @@ struct Deck {
         }
       }
     }
-    allCards.shuffle()
+//    allCards.shuffle()
   }
   
   subscript(index: Int) -> Card {
@@ -181,7 +218,12 @@ struct Deck {
       allCards[index] = newValue
     }
   }
+  
+  private func index(of card: Card) -> Int {
+    allCards.firstIndex(where: { $0.id == card.id })!
+  }
 }
+
 
 /// Model for specific card
 struct Card: Identifiable, Equatable {
@@ -191,6 +233,7 @@ struct Card: Identifiable, Equatable {
   let numberOfShapes: Int
   let id = UUID()
   var selectionStatus: SelectionStatus = .none
+  var isFaceUp = false
   
   enum Shape: CaseIterable, Hashable {
     case diamond, squiggle, oval

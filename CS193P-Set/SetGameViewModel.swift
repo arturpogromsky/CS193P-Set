@@ -10,16 +10,24 @@ import SwiftUI
 
 class SetGameViewModel: ObservableObject {
   
-  @Published var model = SetGame()
+  @Published  var model = SetGame()
   
   var score: Int {
     model.scoreTracker.score
   }
   
-  var cards: [Card] {
+  var cardsToDisplay: [Card] {
     model.deck.cardsToDisplay
   }
   
+  var cardsInDeck: [Card] {
+    model.deck.cardsInDeck
+  }
+  
+  var discardPile: [Card] {
+    model.deck.discardPile
+  }
+  //MARK: - Intent functions
   func cheat() {
     model.cheat()
   }
@@ -40,8 +48,13 @@ class SetGameViewModel: ObservableObject {
     model.startNewGame()
   }
   
+  func deal() {
+    model.deal()
+  }
+  
+  //MARK: - View supply
   ///Returns `SwiftUI.Color` for `Card.Color` enum instance.
-  func uiColor(for cardColor: Card.Color) -> Color {
+  static func uiColor(for cardColor: Card.Color) -> Color {
     switch cardColor {
     case .red: return .red
     case .green: return .green
@@ -51,7 +64,7 @@ class SetGameViewModel: ObservableObject {
   
   /// Takes Card's Shape and ShapeStyle enums instances and returns actual Shape with custom `.shapeModifier` applied to it.
   @ViewBuilder
-  func uiShape(for cardShape: Card.Shape, using shapeStyle: Card.ShapeStyle) -> some View {
+  static func uiShape(for cardShape: Card.Shape, using shapeStyle: Card.ShapeStyle) -> some View {
     switch cardShape {
     case .diamond: Diamond().shapeModifier(shapeStyle: shapeStyle)
     case .squiggle: Squiggle().shapeModifier(shapeStyle: shapeStyle)
