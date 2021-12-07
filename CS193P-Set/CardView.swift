@@ -14,6 +14,11 @@ struct Cardify: ViewModifier, Animatable {
     rotation = isFaceUp ? 0 : 180
   }
   
+	init(selectionStatus: Card.SelectionStatus, rotation: Double) {
+		self.selectionStatus = selectionStatus
+		self.rotation = rotation
+	}
+	
   var selectionStatus: Card.SelectionStatus
   var rotation: Double
   var animatableData: Double {
@@ -21,25 +26,25 @@ struct Cardify: ViewModifier, Animatable {
     set { rotation = newValue }
   }
   
-  func body(content: Content) -> some View {
-    ZStack(alignment: .center) {
-      let roundedRectangle = RoundedRectangle(cornerRadius: Constants.cornerRadius)
-      if rotation > 90 && rotation < 270 {
-        roundedRectangle
-          .foregroundColor(.purple)
-      } else {
-        roundedRectangle
-          .foregroundColor(.white)
-        roundedRectangle
-          .strokeBorder(lineWidth: 2)
-          .highlight(selectionStatus: selectionStatus)
-          .clipShape(roundedRectangle)
-        content
-          .padding()
-      }
-    }
-    .rotation3DEffect(Angle(degrees: rotation), axis: (0, 1, 0))
-  }
+	func body(content: Content) -> some View {
+		ZStack(alignment: .center) {
+			let roundedRectangle = RoundedRectangle(cornerRadius: Constants.cornerRadius)
+			if rotation > 90 && rotation < 270 {
+				roundedRectangle
+					.foregroundColor(.purple)
+			} else {
+				roundedRectangle
+					.foregroundColor(.white)
+				roundedRectangle
+					.strokeBorder(lineWidth: 2)
+					.highlight(selectionStatus: selectionStatus)
+					.clipShape(roundedRectangle)
+				content
+					.padding()
+			}
+		}
+		.rotation3DEffect(Angle(degrees: rotation), axis: (0, 1, 0))
+	}
   
   private struct Constants {
     static let cornerRadius: CGFloat = 15
@@ -53,10 +58,14 @@ extension View {
   func cardify(selectionStatus: Card.SelectionStatus, isFaceUp: Bool) -> some View {
     self.modifier(Cardify(selectionStatus: selectionStatus, isFaceUp: isFaceUp))
   }
+	
+	func cardify(selectionStatus: Card.SelectionStatus, rotation: Double) -> some View {
+		self.modifier(Cardify(selectionStatus: selectionStatus, rotation: rotation))
+	}
 }
 
 
-struct Content: View {
+struct CardContent: View {
   let card: Card
   
   var body: some View {
@@ -84,7 +93,7 @@ struct CardView_Previews: PreviewProvider {
   static let game = SetGameViewModel()
   static var previews: some View {
     let card = game.cardsInDeck.first!
-    Content(card: card)
+    CardContent(card: card)
       .cardify(selectionStatus: card.selectionStatus, isFaceUp: true)
   }
 }

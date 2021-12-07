@@ -15,12 +15,13 @@ struct SetGame {
   
   var scoreTracker = ScoreTracker()
   
-  
-  //MARK: - Gameplay functions
-  /// Choose card, check whether chosen cards form a set or not and highlight them with apropriate color. If cards already highlighted - replace matched or disselect mismatched cards.
+  // MARK: - Gameplay functions
+  /// Choose card, check whether chosen cards form a set or not and highlight them with apropriate color.
+	/// If cards already highlighted - replace matched or disselect mismatched cards.
   mutating func chooseCard(at index: Int) {
     deck[index].selectionStatus.toggle()
     
+		// If there are mismatched cards, then remove them and return from function
     let mismatchedCardsIndices = deck.mismatchedCardsIndices
     if mismatchedCardsIndices.count == 3 {
       markCards(at: mismatchedCardsIndices, as: .none)
@@ -30,12 +31,14 @@ struct SetGame {
       return
     }
     
+		// If there are matched cards, then remove them and return from function
     let matchedCardsIndices = deck.matchedCardsIndices
     if matchedCardsIndices.count == 3 {
       removeCards(at: matchedCardsIndices)
       return
     }
     
+		// Check if selected cards form a set or not, mark them accordingly
     let selectedCardsIndices = deck.selectedCardsIndices
     if selectedCardsIndices.count == 3 {
       if isSet(selectedCardsIndices) {
@@ -76,7 +79,6 @@ struct SetGame {
   mutating func deal() {
     replaceMatchedCards()
     if deck.numberOfCardsToDisplay < deck.allCards.count {
-      deck[deck.numberOfCardsToDisplay].isFaceUp = true
       deck.numberOfCardsToDisplay += 1
     }
   }
@@ -207,7 +209,7 @@ struct Deck {
         }
       }
     }
-//    allCards.shuffle()
+    allCards.shuffle()
   }
   
   subscript(index: Int) -> Card {
