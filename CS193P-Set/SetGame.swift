@@ -19,9 +19,10 @@ struct SetGame {
   /// Choose card, check whether chosen cards form a set or not and highlight them with apropriate color.
 	/// If cards already highlighted - replace matched or disselect mismatched cards.
   mutating func chooseCard(at index: Int) {
+		// First, mark card as selected or disselect, if card already was selected.
     deck[index].selectionStatus.toggle()
     
-		// If there are mismatched cards, then remove them and return from function
+		// If there are mismatched cards, then mark them as .none and select chosen card
     let mismatchedCardsIndices = deck.mismatchedCardsIndices
     if mismatchedCardsIndices.count == 3 {
       markCards(at: mismatchedCardsIndices, as: .none)
@@ -31,14 +32,14 @@ struct SetGame {
       return
     }
     
-		// If there are matched cards, then remove them and return from function
+		// If there are matched cards, then remove them and return from function.
     let matchedCardsIndices = deck.matchedCardsIndices
     if matchedCardsIndices.count == 3 {
       removeCards(at: matchedCardsIndices)
       return
     }
     
-		// Check if selected cards form a set or not, mark them accordingly
+		// Check if selected cards form a set or not, mark them accordingly.
     let selectedCardsIndices = deck.selectedCardsIndices
     if selectedCardsIndices.count == 3 {
       if isSet(selectedCardsIndices) {
@@ -54,20 +55,21 @@ struct SetGame {
     }
   }
   
-  /// Add 3 cards to cards on screen
+  /// Add 3 cards to cards on screen.
   mutating func addCards() {
     if deck.numberOfCardsToDisplay <= deck.allCards.count - 3 {
       deck.numberOfCardsToDisplay += 3
     }
-    replaceMatchedCards()
+    removeMatchedCards()
   }
   
   mutating func startNewGame() {
     self = SetGame()
   }
   
+	/// Find a cards, that forms a set and mark them as matched
   mutating func cheat() {
-    replaceMatchedCards()
+    removeMatchedCards()
     markCards(at: deck.selectedCardsIndices, as: .none)
     if let setIndices = findSet() {
       markCards(at: setIndices, as: .match)
@@ -77,19 +79,11 @@ struct SetGame {
   
   /// Add 12 cards from deck on table
   mutating func deal() {
-    replaceMatchedCards()
+    removeMatchedCards()
     if deck.numberOfCardsToDisplay < deck.allCards.count {
       deck.numberOfCardsToDisplay += 1
     }
   }
-  
-  mutating func flip() {
-    (0..<deck.numberOfCardsToDisplay).forEach { deck.allCards[$0].isFaceUp.toggle() }
-  }
-  
-  
-  
-  
   
   // MARK: - Private
   /// Takes 3 cards as input and checks if they form a set.
@@ -104,16 +98,18 @@ struct SetGame {
     return true
   }
   
-  private mutating func replaceMatchedCards() {
+	/// Find matched cards and remove them
+  private mutating func removeMatchedCards() {
     let matchedCardsIndices = deck.allCards.indices.filter { deck.allCards[$0].selectionStatus == .match }
     if matchedCardsIndices.count == 3 {
       removeCards(at: matchedCardsIndices)
     }
   }
   
-  private mutating func markCards(at indices: [Int], as selectionStatus: Card.SelectionStatus) {
+	/// Change `selectionStatus` of given cards to `newSelectionStatus`
+  private mutating func markCards(at indices: [Int], as newSelectionStatus: Card.SelectionStatus) {
     for index in indices {
-      deck.allCards[index].selectionStatus = selectionStatus
+      deck.allCards[index].selectionStatus = newSelectionStatus
     }
   }
   
@@ -135,6 +131,7 @@ struct SetGame {
     }
   }
   
+	/// If `cardsToDisplay` contains a set, then return indices of cards that forms it. If not, return `nil`
   private func findSet() -> [Int]? {
     let cardsToDisplay = deck.cardsToDisplay
     for first in cardsToDisplay.indices {
@@ -167,11 +164,7 @@ struct Deck {
   }
   
   /// Number of cards to show on screen.
-  var numberOfCardsToDisplay = 0 {
-    didSet {
-      (0..<numberOfCardsToDisplay).forEach { allCards[$0].isFaceUp = true }
-    }
-  }
+  var numberOfCardsToDisplay = 0
   
   var cardsToDisplay: [Card] {
     Array(allCards[..<numberOfCardsToDisplay])
@@ -221,7 +214,7 @@ struct Deck {
     }
   }
   
-  private func index(of card: Card) -> Int {
+  func index(of card: Card) -> Int {
     allCards.firstIndex(where: { $0.id == card.id })!
   }
 }
@@ -279,30 +272,3 @@ struct ScoreTracker {
     score -= 30
   }
 }
-
-///Version of `chooseCard` that automatically deletes cards that form a set.
-//mutating func chooseCard(at index: Int) {
-//  cards[index].selectionStatus.toggle()
-//  let selectedCardsIndices = cards.indices.filter { cards[$0].selectionStatus != .none }
-//  if selectedCardsIndices.count == 3 {
-//    if isSet(selectedCardsIndices) {
-//      var offset = 0
-//      for selectedCardsIndex in selectedCardsIndices {
-//        cards.remove(at: selectedCardsIndex - offset)
-//        offset += 1
-//      }
-//      if numberOfCardsToDisplay > 12 {
-//        numberOfCardsToDisplay -= 3
-//      }
-//    } else {
-//      for selectedCardsIndex in selectedCardsIndices {
-//        cards[selectedCardsIndex].selectionStatus = .mismatch
-//      }
-//    }
-//  } else if selectedCardsIndices.count > 3 {
-//    for selectedCardsIndex in selectedCardsIndices {
-//      cards[selectedCardsIndex].selectionStatus = .none
-//    }
-//    cards[index].selectionStatus.toggle()
-//  }
-//}

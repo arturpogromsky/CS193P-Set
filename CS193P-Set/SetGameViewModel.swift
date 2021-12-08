@@ -27,6 +27,7 @@ class SetGameViewModel: ObservableObject {
   var discardPile: [Card] {
     model.deck.discardPile
   }
+	
   //MARK: - Intent functions
   func cheat() {
     model.cheat()

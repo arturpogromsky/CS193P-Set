@@ -11,88 +11,22 @@ struct SetGameView: View {
   @ObservedObject var game: SetGameViewModel
   @Namespace var dealingNameSpace
   @State private var wasDealt = false
-
+	@State private var angle = 0.0
+	@State private var isDealing = true
   var body: some View {
-    VStack {
-      HStack {
-        ButtonView(text: "Deal") {
-          withAnimation(.easeOut(duration: Constants.animationDuration)) {
-            game.deal()
-          }
-        }
-
-        ButtonView(text: "Cheat") {
-          withAnimation(.easeOut(duration: Constants.animationDuration)) {
-            game.cheat()
-          }
-        }
-        ButtonView(text: "New") {
-          withAnimation(.easeOut(duration: Constants.animationDuration)) {
-            game.startNewGame()
-            wasDealt = false
-          }
-        }
-      }
-				.frame(maxHeight: 35)
-      ZStack(alignment: .bottom) {
-        AspectVGrid(items: game.cardsToDisplay, aspectRatio: Constants.aspectRatio) { card in
-          CardContent(card: card)
-						.transition(.identity)
-						.cardify(selectionStatus: card.selectionStatus, rotation: card.selectionStatus == .match ? 360 : 0)
-            .matchedGeometryEffect(id: card.id, in: dealingNameSpace)
-            .padding(.all, 3.0)
-            .onTapGesture {
-							withAnimation(.easeOut(duration: Constants.animationDuration)) {
-                game.choose(card)
-              }
-            }
-
-        }
-        
-        HStack {
-          ZStack {
-            ForEach(game.cardsInDeck.reversed()) { card in
-              CardContent(card: card)
-								.transition(.identity)
-								.cardify(selectionStatus: card.selectionStatus, isFaceUp: false)
-//								.transition(.modifier(active: Cardify(selectionStatus: card.selectionStatus,
-//																											isFaceUp: true),
-//																			identity: Cardify(selectionStatus: card.selectionStatus,
-//																												isFaceUp: false)))
-                .matchedGeometryEffect(id: card.id, in: dealingNameSpace)
-							
-
-                
-            }
-          }
-          .aspectRatio(2/3, contentMode: .fit)
-          .frame(height: 150)
-          .onTapGesture {
-            for i in 1...(wasDealt ? 3 : 12) {
-							withAnimation(.easeOut(duration: Constants.animationDuration).delay(Double(i) * Constants.dealDelay)) {
-                game.deal()
-              }
-            }
-            wasDealt = true
-          }
-          
-          if game.discardPile.count != 0 {
-            Spacer()
-          }
-
-          ZStack {
-            ForEach(game.discardPile) { card in
-              CardContent(card: card)
-								.transition(.identity)
-                .cardify(selectionStatus: card.selectionStatus, isFaceUp: false)
-                .matchedGeometryEffect(id: card.id, in: dealingNameSpace)
-            }
-          }
-          .aspectRatio(2/3, contentMode: .fit)
-          .frame(height: 150)
-        }
-      }
-    }
+		VStack {
+			buttonsAndScore
+			VStack {
+				cards
+				HStack {
+					deck
+					if !game.discardPile.isEmpty {
+						Spacer()
+					}
+					discardPile
+				}
+			}
+		}
     .padding(.horizontal, 10.0)
     .background {
       Color("Background")
@@ -100,12 +34,104 @@ struct SetGameView: View {
     }
   }
   
-  ///BUG: if `aspectRatio` = 2/3 and if there are 15 cards, then, when cards form set, 6 cards disappeare from screen instead of 3
-  struct Constants {
-    static let aspectRatio: CGFloat = 0.66
+	func swing() {
+		withAnimation(.easeOut(duration: Constants.swingDuration)) {
+			angle = 30
+		}
+		withAnimation(.easeOut(duration: Constants.swingDuration).delay(Constants.swingDuration)) {
+			angle = -30
+		}
+		withAnimation(.easeOut(duration: Constants.swingDuration).delay(2 * Constants.swingDuration)) {
+			angle = 0
+		}
+	}
+	
+	var cards: some View {
+		AspectVGrid(items: game.cardsToDisplay, aspectRatio: Constants.aspectRatio) { card in
+			CardContent(card: card)
+				.transition(.identity)
+				.cardify(selectionStatus: card.selectionStatus, rotation: card.selectionStatus == .match ? 360 : 0)
+				.rotation3DEffect(.degrees(card.selectionStatus == .mismatch ? angle : 0), axis: (0, 1, 0))
+				.matchedGeometryEffect(id: card.id, in: dealingNameSpace)
+				.padding(.all, 3.0)
+				.onTapGesture {
+					withAnimation(.easeOut(duration: Constants.animationDuration)) {
+						game.choose(card)
+					}
+					swing()
+				}
+		}
+	}
+	
+	var deck: some View {
+		ZStack {
+			ForEach(game.cardsInDeck.reversed()) { card in
+				let index = game.cardsInDeck.firstIndex(of: card) ?? 0
+				CardContent(card: card)
+					.transition(.move(edge: .leading))
+					.cardify(selectionStatus: card.selectionStatus, isFaceUp: false)
+					.matchedGeometryEffect(id: card.id, in: dealingNameSpace)
+					.offset(x: Constants.xOffset * CGFloat(index),
+									y: Constants.yOffset * CGFloat(index))
+			}
+		}
+		.aspectRatio(2/3, contentMode: .fit)
+		.frame(height: Constants.deckHight)
+		.onTapGesture {
+			for i in 1...(wasDealt ? 3 : 12) {
+				withAnimation(.easeOut(duration: Constants.animationDuration).delay(Double(i) * Constants.dealDelay)) {
+					game.deal()
+				}
+			}
+			wasDealt = true
+		}
+	}
+	
+	var discardPile: some View {
+		ZStack {
+			ForEach(game.discardPile.reversed()) { card in
+				let index = game.discardPile.firstIndex(of: card) ?? 0
+				CardContent(card: card)
+					.transition(.move(edge: .trailing))
+					.cardify(selectionStatus: card.selectionStatus, isFaceUp: false)
+					.matchedGeometryEffect(id: card.id, in: dealingNameSpace)
+					.offset(x: Constants.xOffset * CGFloat(index),
+									y: Constants.yOffset * CGFloat(index))
+			}
+		}
+		.aspectRatio(2/3, contentMode: .fit)
+		.frame(height: Constants.deckHight)
+	}
+	
+	var buttonsAndScore: some View {
+		HStack {
+			ButtonView(text: "Cheat") {
+				withAnimation(.easeOut(duration: Constants.animationDuration)) {
+					game.cheat()
+				}
+			}
+			Text(String(game.score))
+				.frame(minWidth: 90)
+			ButtonView(text: "New") {
+				withAnimation(.easeOut(duration: Constants.animationDuration)) {
+					game.startNewGame()
+					wasDealt = false
+				}
+			}
+		}
+		.frame(maxHeight: 35)
+	}
+	
+	/// BUG: if `aspectRatio` = 2/3 and if there are 15 cards, then, when cards form set, 6 cards disappeare from screen instead of 3
+	struct Constants {
+		static let aspectRatio: CGFloat = 0.66
 		static let animationDuration = 0.5
 		static let dealDelay = 0.2
-  }
+		static let swingDuration = 0.15
+		static let deckHight: CGFloat = 120
+		static let xOffset: CGFloat = -0.15
+		static let yOffset: CGFloat = 0.15
+	}
 }
 
 
@@ -132,23 +158,6 @@ struct ButtonView: View {
     static let cornerRadius: CGFloat = 10
   }
 }
-
-//struct FlipTransiion: ViewModifier {
-//  var degrees: Double
-//  func body(content: Content) -> some View {
-//    content
-//      .rotation3DEffect(.degrees(degrees), axis: (0, 1, 0))
-//  }
-//}
-
-
-
-
-
-
-
-
-
 
 
 struct ContentView_Previews: PreviewProvider {

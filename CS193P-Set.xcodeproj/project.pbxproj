@@ -47,14 +47,6 @@
 		EEE6AFD3275CFAD000A253B2 = {
 			isa = PBXGroup;
 			children = (
-				EEE6AFED275CFB3900A253B2 /* AspectVGrid.swift */,
-				EEE6AFF1275CFB3900A253B2 /* CardView.swift */,
-				EEE6AFF4275CFB3900A253B2 /* SetApp.swift */,
-				EEE6AFF0275CFB3900A253B2 /* SetGame.swift */,
-				EEE6AFF3275CFB3900A253B2 /* SetGameView.swift */,
-				EEE6AFF5275CFB3900A253B2 /* SetGameViewModel.swift */,
-				EEE6AFF2275CFB3900A253B2 /* Shapes.swift */,
-				EEE6AFEE275CFB3900A253B2 /* StartScreen.swift */,
 				EEE6AFDE275CFAD000A253B2 /* CS193P-Set */,
 				EEE6AFDD275CFAD000A253B2 /* Products */,
 			);
@@ -71,6 +63,14 @@
 		EEE6AFDE275CFAD000A253B2 /* CS193P-Set */ = {
 			isa = PBXGroup;
 			children = (
+				EEE6AFED275CFB3900A253B2 /* AspectVGrid.swift */,
+				EEE6AFF1275CFB3900A253B2 /* CardView.swift */,
+				EEE6AFF4275CFB3900A253B2 /* SetApp.swift */,
+				EEE6AFF0275CFB3900A253B2 /* SetGame.swift */,
+				EEE6AFF3275CFB3900A253B2 /* SetGameView.swift */,
+				EEE6AFF5275CFB3900A253B2 /* SetGameViewModel.swift */,
+				EEE6AFF2275CFB3900A253B2 /* Shapes.swift */,
+				EEE6AFEE275CFB3900A253B2 /* StartScreen.swift */,
 				EEE6AFE3275CFAD100A253B2 /* Assets.xcassets */,
 				EEE6AFE5275CFAD100A253B2 /* Preview Content */,
 			);
