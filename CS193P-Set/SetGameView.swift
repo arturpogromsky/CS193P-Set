@@ -15,15 +15,15 @@ struct SetGameView: View {
 	@State private var isDealing = true
   var body: some View {
 		VStack {
-			buttonsAndScore
+			buttonsAndScore // "Cheat" and "New" buttons and score
 			VStack {
-				cards
+				cards // LazyVGrid with cards
 				HStack {
-					deck
+					deck // Deck of not yet dealt cards
 					if !game.discardPile.isEmpty {
 						Spacer()
 					}
-					discardPile
+					discardPile // Already dealt cards
 				}
 			}
 		}
@@ -34,14 +34,15 @@ struct SetGameView: View {
     }
   }
   
+	
 	func swing() {
-		withAnimation(.easeOut(duration: Constants.swingDuration)) {
+		withAnimation(.easeOut(duration: Constants.swingStepDuration)) {
 			angle = 30
 		}
-		withAnimation(.easeOut(duration: Constants.swingDuration).delay(Constants.swingDuration)) {
+		withAnimation(.easeOut(duration: Constants.swingStepDuration).delay(Constants.swingStepDuration)) {
 			angle = -30
 		}
-		withAnimation(.easeOut(duration: Constants.swingDuration).delay(2 * Constants.swingDuration)) {
+		withAnimation(.easeOut(duration: Constants.swingStepDuration).delay(2 * Constants.swingStepDuration)) {
 			angle = 0
 		}
 	}
@@ -127,7 +128,7 @@ struct SetGameView: View {
 		static let aspectRatio: CGFloat = 0.66
 		static let animationDuration = 0.5
 		static let dealDelay = 0.2
-		static let swingDuration = 0.15
+		static let swingStepDuration = 0.15
 		static let deckHight: CGFloat = 120
 		static let xOffset: CGFloat = -0.15
 		static let yOffset: CGFloat = 0.15

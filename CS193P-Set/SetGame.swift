@@ -55,14 +55,6 @@ struct SetGame {
     }
   }
   
-  /// Add 3 cards to cards on screen.
-  mutating func addCards() {
-    if deck.numberOfCardsToDisplay <= deck.allCards.count - 3 {
-      deck.numberOfCardsToDisplay += 3
-    }
-    removeMatchedCards()
-  }
-  
   mutating func startNewGame() {
     self = SetGame()
   }
@@ -213,10 +205,6 @@ struct Deck {
       allCards[index] = newValue
     }
   }
-  
-  func index(of card: Card) -> Int {
-    allCards.firstIndex(where: { $0.id == card.id })!
-  }
 }
 
 
@@ -228,7 +216,6 @@ struct Card: Identifiable, Equatable {
   let numberOfShapes: Int
   let id = UUID()
   var selectionStatus: SelectionStatus = .none
-  var isFaceUp = false
   
   enum Shape: CaseIterable, Hashable {
     case diamond, squiggle, oval

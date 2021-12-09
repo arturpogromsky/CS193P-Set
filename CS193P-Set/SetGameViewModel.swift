@@ -28,7 +28,8 @@ class SetGameViewModel: ObservableObject {
     model.deck.discardPile
   }
 	
-  //MARK: - Intent functions
+  // MARK: - Intent functions
+	/// Find a set
   func cheat() {
     model.cheat()
   }
@@ -39,16 +40,13 @@ class SetGameViewModel: ObservableObject {
     else { return }
     model.chooseCard(at: cardIndex)
   }
-  
-  ///Add 3 cards on screen
-  func addCards() {
-    model.addCards()
-  }
-  
+	
+	/// Recreate a model
   func startNewGame() {
     model.startNewGame()
   }
   
+	/// Push 1 card from deck
   func deal() {
     model.deal()
   }
